@@ -1,0 +1,265 @@
+==========================================================================
+DRAYKO - GUIA PASO A PASO PARA PREPARAR EL ENTORNO Y PROBAR LA APLICACION
+==========================================================================
+Proyecto de Computacion Movil - Corporacion Universitaria Minuto de Dios
+Autor: Wilson Andrey Piragua Garcia
+Docente: Edwin Albeiro Ramos Villamil
+
+
+--------------------------------------------------------------------------
+INDICE
+--------------------------------------------------------------------------
+0. Resumen: que vas a instalar y para que sirve
+1. Instalar los programas base
+2. Preparar la carpeta del proyecto
+3. Base de datos (MySQL)
+4. Backend (API)
+5. Frontend (app) + version con soporte NFC
+6. Rutina de cada vez que vayas a probar la app
+7. Como funcionan los stickers (los 4 tipos de contenido)
+8. Mapa de las 15 funcionalidades del proyecto
+
+
+--------------------------------------------------------------------------
+0. RESUMEN: QUE VAS A INSTALAR Y PARA QUE SIRVE
+--------------------------------------------------------------------------
+- Node.js        -> motor que corre el backend y el frontend
+- XAMPP          -> te da MySQL (base de datos) y phpMyAdmin
+- Visual Studio Code (opcional) -> editor para ver/tocar el codigo
+- Cuenta en expo.dev + EAS CLI  -> para compilar la version con NFC real
+- Git / GitHub Desktop (opcional) -> para subir el proyecto a GitHub
+
+
+--------------------------------------------------------------------------
+1. INSTALAR LOS PROGRAMAS BASE
+--------------------------------------------------------------------------
+1.1 Node.js
+    - Entra a nodejs.org
+    - Descarga la version LTS (la recomendada)
+    - Instala dejando todas las opciones por defecto
+    - Verifica: abre CMD (Windows) o Terminal (Mac) y escribe:
+          node -v
+      Debe mostrar algo como v20.x.x. Si da error, reinicia el computador.
+
+1.2 XAMPP
+    - Entra a apachefriends.org
+    - Descarga la version para tu sistema operativo
+    - Instala dejando todos los componentes marcados por defecto
+
+1.3 Visual Studio Code (opcional, recomendado)
+    - Entra a code.visualstudio.com
+    - Descarga e instala con las opciones por defecto
+
+1.4 Cuenta de Expo (para el build con NFC, ver seccion 5)
+    - Crea una cuenta gratis en expo.dev
+
+
+--------------------------------------------------------------------------
+2. PREPARAR LA CARPETA DEL PROYECTO
+--------------------------------------------------------------------------
+2.1 Descomprime el .zip del proyecto en una ruta que NO este sincronizada
+    con OneDrive. La opcion mas segura: crea la carpeta directamente en
+
+          C:\drayko
+
+    Evita tildes, enies (ñ) y espacios en los nombres de carpetas.
+
+2.2 Agrega una excepcion en el antivirus para esa carpeta:
+    Seguridad de Windows -> Proteccion antivirus y contra amenazas ->
+    Administrar configuracion -> Exclusiones -> Agregar exclusion ->
+    Carpeta -> selecciona C:\drayko
+
+    (Esto evita que el antivirus bloquee archivos mientras la app los usa,
+    lo que puede dejar el proceso de "Bundling" trabado en 99%.)
+
+2.3 Dentro de C:\drayko deberias ver: backend, frontend, database,
+    README.md
+
+
+--------------------------------------------------------------------------
+3. BASE DE DATOS (MySQL) - una sola vez
+--------------------------------------------------------------------------
+3.1 Abre XAMPP Control Panel
+3.2 Dale Start a Apache y a MySQL (ambos deben quedar en verde)
+3.3 Abre el navegador y entra a: localhost/phpmyadmin
+3.4 Pestaña "Importar" -> Seleccionar archivo -> busca
+    database/db_drayko.sql dentro de tu carpeta del proyecto
+3.5 Baja hasta el final y dale clic a "Continuar" / "Go"
+3.6 Verifica: en el menu izquierdo debe aparecer "db_drayko" con las
+    tablas "users" y "stickers"
+
+NOTA: si ya habias importado la base antes y solo necesitas actualizarla
+(por ejemplo agregar la columna de bloqueo de usuarios), entra a la
+pestana SQL de phpMyAdmin y ejecuta:
+
+    ALTER TABLE users ADD COLUMN status VARCHAR(20) DEFAULT 'active' AFTER role;
+
+(si ya existe, te va a marcar un error que puedes ignorar, significa que
+ya estaba hecho).
+
+
+--------------------------------------------------------------------------
+4. BACKEND (API) - instalar una vez, encender cada vez que pruebes
+--------------------------------------------------------------------------
+4.1 Averigua la IPv4 de tu computador:
+    - Windows: CMD -> escribe "ipconfig" -> busca "Direccion IPv4"
+    - Mac: Preferencias del Sistema -> Red
+
+4.2 Abre una terminal dentro de C:\drayko\backend y ejecuta:
+          npm install
+    (tarda 1-3 minutos, solo se hace una vez)
+
+4.3 Copia el archivo .env.example y renombra la copia a .env
+
+4.4 Edita el archivo .env:
+    - DB_PASSWORD=   (vacio si no le pusiste clave a tu MySQL)
+    - HOST=TU_IPV4   (la que sacaste en el paso 4.1)
+
+4.5 Enciende el servidor:
+          npm run dev
+    Debes ver:
+          Base de datos db_drayko conectada
+          Servidor de Drayko corriendo en http://TU_IP:3000
+
+    Deja esta terminal abierta mientras pruebes la app.
+
+4.6 Prueba rapida: abre en el navegador
+          http://TU_IP:3000/api-docs
+    Debe cargar la documentacion Swagger de la API.
+
+IMPORTANTE: MySQL (XAMPP) debe estar encendido ANTES de correr
+"npm run dev", si no, el backend se cae al no poder conectarse a la base
+de datos.
+
+
+--------------------------------------------------------------------------
+5. FRONTEND (app) + VERSION CON SOPORTE NFC
+--------------------------------------------------------------------------
+5.1 Instalar dependencias (una sola vez):
+    Abre otra terminal en C:\drayko\frontend y ejecuta:
+          npm install
+
+5.2 IMPORTANTE sobre NFC:
+    La app Expo Go descargada de Play Store/App Store NO incluye soporte
+    para NFC (es una app generica de Expo). Para que "Leer NFC" y
+    "Escribir NFC" funcionen de verdad, hay que generar una version
+    personalizada UNA SOLA VEZ, asi:
+
+    a) Instala la herramienta de compilacion:
+            npm install -g eas-cli
+
+    b) Inicia sesion con tu cuenta de expo.dev:
+            eas login
+
+    c) Agrega el soporte de Dev Client al proyecto:
+            npx expo install expo-dev-client
+
+    d) Configura el build:
+            eas build:configure
+       (acepta las opciones por defecto)
+
+    e) Lanza la compilacion en la nube:
+            eas build --platform android --profile development
+       Tarda entre 10 y 20 minutos. Al terminar te da un link/QR para
+       descargar un archivo .apk.
+
+    f) Desde tu celular, escanea ese QR o abre el link, descarga el .apk
+       e instalalo (acepta el permiso de "instalar de origenes
+       desconocidos" si te lo pide).
+
+    g) Esa nueva app (icono distinto a Expo Go) es la que vas a usar de
+       ahora en adelante para abrir Drayko con NFC incluido.
+
+5.3 Para las pruebas SIN necesidad de NFC (mas rapido, sin generar nada),
+    puedes seguir usando Expo Go normal:
+          npm run start:local
+    y escaneas el QR con la app Expo Go de Play Store/App Store.
+
+
+--------------------------------------------------------------------------
+6. RUTINA DE CADA VEZ QUE VAYAS A PROBAR LA APP
+--------------------------------------------------------------------------
+Sigue siempre este orden exacto:
+
+    1) Enciende MySQL en XAMPP Control Panel (Start, en verde)
+    2) Terminal en backend -> npm run dev
+       (espera el mensaje "Base de datos db_drayko conectada")
+    3) Terminal en frontend -> una de estas dos opciones:
+         - Con NFC:    npx expo start --dev-client
+         - Sin NFC:    npm run start:local
+    4) Abre en tu celular la app correspondiente (la del build de EAS,
+       o Expo Go) y escanea el codigo QR que aparecio en la terminal
+
+Si inviertes el orden (por ejemplo backend antes que MySQL), el backend
+se cae y la app se queda "cargando" o te da error de conexion.
+
+
+--------------------------------------------------------------------------
+7. COMO FUNCIONAN LOS STICKERS (4 tipos de contenido)
+--------------------------------------------------------------------------
+Al registrar o editar un sticker, el campo "Contenido" espera un formato
+distinto segun el tipo elegido:
+
+TEXTO
+    Se muestra tal cual al leer el sticker dentro de la app. No dispara
+    ninguna accion automatica en el telefono.
+    Ejemplo: Bienvenido a la tienda de Alex, pregunta por las promociones.
+
+URL
+    Al acercar el telefono, Android abre el navegador en esa direccion
+    automaticamente. Debe empezar con http:// o https://
+    Ejemplo: https://instagram.com/tutienda
+
+CONTACTO
+    Graba una tarjeta de contacto (vCard). Al leerlo, el telefono ofrece
+    guardarlo en la agenda. Debe ir en formato JSON exacto:
+    Ejemplo: {"name":"Alex Rivera","phone":"3101234567","email":"alex@drayko.app"}
+
+WIFI
+    Graba las credenciales de una red. En telefonos compatibles, ofrece
+    conectarse automaticamente. Tambien en formato JSON:
+    Ejemplo: {"ssid":"Drayko_Home_5G","password":"super-secreta-123"}
+
+NOTA: en "Contacto" y "Wifi", respeta las comillas dobles y las comas tal
+cual los ejemplos. Si el formato esta mal, la escritura del sticker
+fisico va a fallar (no se daña nada, solo corrige el texto y reintenta).
+
+Dentro de la app Drayko, el boton "Leer NFC" SIEMPRE funciona igual sin
+importar el tipo: lee el chip fisico, lo busca en la base de datos y
+muestra el detalle completo. El "conectar solo" o "abrir el navegador
+solo" al acercar el telefono SIN abrir la app depende del modelo de
+telefono (no todos lo soportan igual) - para la sustentacion, usa mejor
+el boton "Leer NFC" de la app, que es 100% confiable.
+
+
+--------------------------------------------------------------------------
+8. MAPA DE LAS 15 FUNCIONALIDADES DEL PROYECTO
+--------------------------------------------------------------------------
+Las puedes probar todas sin stickers fisicos, EXCEPTO RF-14 y RF-15.
+
+RF-01  Iniciar sesion                  -> pantalla Login
+RF-02  Cerrar sesion                   -> Perfil -> Cerrar sesion
+RF-03  Autorregistro                   -> Login -> Crear cuenta nueva
+RF-04  Registrar usuarios              -> Panel admin -> Crear
+RF-05  Consultar todos los usuarios    -> Panel admin (listado)
+RF-06  Consultar usuario por ID        -> Panel admin -> tocar un usuario
+RF-07  Actualizar usuario              -> Perfil -> Editar perfil
+                                           (o Panel admin -> editar rol/estado)
+RF-08  Eliminar usuario                -> Panel admin -> Eliminar
+RF-09  Registrar sticker               -> Home -> boton +
+RF-10  Consultar todos los stickers    -> Home (listado)
+RF-11  Consultar sticker por ID        -> tocar un sticker
+RF-12  Actualizar sticker              -> Detalle de sticker -> Editar
+RF-13  Eliminar sticker                -> Detalle de sticker -> Eliminar
+RF-14  Leer sticker NFC  (necesita sticker fisico + build con NFC)
+RF-15  Escribir sticker NFC (necesita sticker fisico + build con NFC)
+
+Funciones extra de administrador (agregadas sobre las 15 base):
+    - Dashboard con metricas (Perfil -> Dashboard, solo Admin)
+    - Bloquear/desbloquear usuarios y cambiar su rol
+    - Asignar/regalar un sticker a otro usuario al crearlo
+
+
+==========================================================================
+FIN DE LA GUIA
+==========================================================================

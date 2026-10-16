@@ -108,11 +108,3 @@ dispositivo fisico con NFC; no funciona en el emulador.
 - **Navegacion**: todas las pantallas secundarias (detalle y formulario de
   sticker, leer/escribir NFC, perfil, panel admin, dashboard) tienen ahora una
   flecha de regreso visible en la parte superior.
-
-## 6. Pendiente / siguientes pasos sugeridos
-
-- Probar en un dispositivo Android fisico con NFC activado.
-- Agregar validaciones de formulario mas estrictas (regex de email, longitud de contrasena).
-- Subir el backend a un servicio como Render/Railway para no depender de la IP local.
-- Agregar foto de perfil real (subida de imagen) en vez de solo la inicial del nombre.
-- Agregar graficas (barras/torta) al Dashboard en vez de solo numeros.
